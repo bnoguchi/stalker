@@ -3,13 +3,29 @@ require 'beanstalk-client'
 require 'json'
 require 'uri'
 require File.expand_path(File.join(File.dirname(__FILE__), 'ext/hash_with_indifferent_access'))
+require 'uuidtools'
 
 module Stalker
 	extend self
 
+  # Defaults the eigenclass's @does_autogen_job_id to true.
+  # Putting it in a singleton_method_added hook avoids
+  # alternative implementations' multiple calls to
+  #     @does_autogen_job_id = true if @does_autogen_job_id.nil?
+  # Instead, the default is set once when the #does_autogen_job_id
+  # is first defined under the eigenclass (i.e., under (class << self)).
+  def self.singleton_method_added(name)
+    @does_autogen_job_id = true if name.to_sym == :does_autogen_job_id
+  end
+
+  class << self; attr_accessor :does_autogen_job_id; end
+
 	def enqueue(job, args={})
 		beanstalk.use job
+    pp self.does_autogen_job_id
+    args[:job_id] = UUIDTools::UUID.random_create.to_s if self.does_autogen_job_id
 		beanstalk.put [ job, args ].to_json
+    return args[:job_id]
 	rescue Beanstalk::NotConnected => e
 		failed_connection(e)
 	end

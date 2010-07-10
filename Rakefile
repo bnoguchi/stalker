@@ -12,6 +12,7 @@ Jeweler::Tasks.new do |s|
 
 	s.add_dependency 'beanstalk-client'
 	s.add_dependency 'json_pure'
+  s.add_dependency 'uuidtools'
 
 	s.files = FileList["[A-Z]*", "{bin,lib}/**/*"]
 end
