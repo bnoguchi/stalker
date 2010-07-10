@@ -1,6 +1,8 @@
+require 'rubygems'
 require 'beanstalk-client'
 require 'json'
 require 'uri'
+require File.expand_path(File.join(File.dirname(__FILE__), 'ext/hash_with_indifferent_access'))
 
 module Stalker
 	extend self
@@ -48,6 +50,7 @@ module Stalker
 	def work_one_job
 		job = beanstalk.reserve
 		name, args = JSON.parse job.body
+    args = Ext::HashWithIndifferentAccess.new(args)
 		log_job_begin(name, args)
 		handler = @@handlers[name]
 		raise(NoSuchJob, name) unless handler
