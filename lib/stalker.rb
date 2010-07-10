@@ -22,7 +22,6 @@ module Stalker
 
 	def enqueue(job, args={})
 		beanstalk.use job
-    pp self.does_autogen_job_id
     args[:job_id] = UUIDTools::UUID.random_create.to_s if self.does_autogen_job_id
 		beanstalk.put [ job, args ].to_json
     return args[:job_id]
