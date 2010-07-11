@@ -7,7 +7,8 @@ module Stalker
 
 	def enqueue(job, args={})
 		beanstalk.use job
-		beanstalk.put [ job, args ].to_json
+    priority, delay, ttr = args.delete(:priority), args.delete(:delay), args.delete(:ttr)
+    beanstalk.put([ job, args ].to_json, priority || 65_536, delay || 0, ttr || 120)
 	rescue Beanstalk::NotConnected => e
 		failed_connection(e)
 	end
