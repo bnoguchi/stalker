@@ -23,7 +23,8 @@ module Stalker
 	def enqueue(job, args={})
 		beanstalk.use job
     args[:job_id] = UUIDTools::UUID.random_create.to_s if self.does_autogen_job_id
-		native_job_id = beanstalk.put [ job, args ].to_json
+    priority, delay, ttr = args.delete(:priority), args.delete(:delay), args.delete(:ttr)
+    native_job_id = beanstalk.put([ job, args ].to_json, priority || 65_536, delay || 0, ttr || 120)
     return args[:job_id]
 	rescue Beanstalk::NotConnected => e
 		failed_connection(e)
